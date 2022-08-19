@@ -1,10 +1,13 @@
 package dev.projectcoda.gateway.data;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
 
 /**
  * The Coda user repository.
  * @author Gerard Sayson
  */
-public interface UserRepository extends MongoRepository<User, String> {
-}
+@Repository
+public interface UserRepository extends MongoRepository<User, UUID> { }

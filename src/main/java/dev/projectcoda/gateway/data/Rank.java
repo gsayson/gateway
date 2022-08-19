@@ -17,7 +17,7 @@ import javax.validation.constraints.PositiveOrZero;
  *     <li><b>E</b> at <em>750 rating</em>;</li>
  *     <li><b>F</b> at <em>749 rating</em> and under.</li>
  * </ul>
- * A player's rating is never zero.
+ * A player's rating is never lower than zero.
  * @author Gerard Sayson
  */
 
@@ -61,6 +61,7 @@ public enum Rank {
 	 * @param rating The rating to evaluate.
 	 * @return the {@link Rank} enum constant whose threshold is equal to or less than the given rating.
 	 */
+	@SuppressWarnings("unused")
 	public static Rank fromRating(@PositiveOrZero int rating) {
 		for(Rank rank : Rank.values()) {
 			if(rating >= rank.threshold) return rank;
@@ -69,4 +70,8 @@ public enum Rank {
 		throw new InternalError("unreachable");
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
 }

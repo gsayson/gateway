@@ -1,10 +1,13 @@
 package dev.projectcoda.gateway.data;
 
-import lombok.Data;
+import dev.projectcoda.gateway.api.Response;
+import lombok.*;
+import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,8 +23,11 @@ import java.util.UUID;
  * <p>All fields in this class are not null unless specified otherwise.</p>
  * @author Gerard Sayson
  */
-@Data
-public final class User {
+@Builder
+@Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
+public final class User implements Response {
 
 	/**
 	 * The username of the user. This field cannot be blank.
@@ -34,6 +40,7 @@ public final class User {
 	 * The UUID of the user. This is a random (version 4, variant 2: Leach-Salz) UUID
 	 * that can be obtained through {@link UUID#randomUUID()}.
 	 */
+	@Id
 	@NotNull
 	private UUID uuid;
 
@@ -55,7 +62,8 @@ public final class User {
 	 * </ul>
 	 */
 	@NotNull
-	private String[] badges;
+	@Singular
+	private Set<String> badges;
 
 	/**
 	 * The matchmaking rating of the user. This is used to infer his rank, and by default
