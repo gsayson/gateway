@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 
 /**
  * The external configuration class for Coda. Spring will scan for the following properties
@@ -31,5 +32,19 @@ public class GatewayConfiguration {
 	 */
 	@NotBlank
 	private String mongoName;
+
+	/**
+	 * The lifetime of Gateway-issued tokens, in hours.
+	 * This must be above zero.
+	 */
+	@Positive
+	private int tokenExpiration;
+
+	/**
+	 * The lifetime of refresh token used to issue Gateway tokens, in days.
+	 * This must be above zero.
+	 */
+	@Positive
+	private int refreshExpiration = 1;
 
 }

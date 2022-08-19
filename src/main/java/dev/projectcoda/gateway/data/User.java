@@ -1,12 +1,12 @@
 package dev.projectcoda.gateway.data;
 
-import dev.projectcoda.gateway.api.Response;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,11 +23,11 @@ import java.util.UUID;
  * <p>All fields in this class are not null unless specified otherwise.</p>
  * @author Gerard Sayson
  */
-@Builder
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
-public final class User implements Response {
+@Builder(toBuilder = true)
+public final class User {
 
 	/**
 	 * The username of the user. This field cannot be blank.
@@ -78,5 +78,17 @@ public final class User implements Response {
 	 */
 	@NotNull
 	private Rank rank;
+
+	/**
+	 * A set of {@link dev.projectcoda.gateway.security.Permissions Permissions} that
+	 * the user possesses.
+	 */
+	@Singular
+	private List<String> permissions;
+
+	/**
+	 * The password of the user, encoded using {@link dev.projectcoda.gateway.util.SecurityUtils#encodeBCrypt(String) SecurityUtils.encodeBCrypt(String)}.
+	 */
+	private String password;
 
 }
