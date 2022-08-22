@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Project Coda LLC, 2022.
+ * All rights reserved.
+ */
+
 package dev.projectcoda.gateway.data;
 
 import org.springframework.data.mongodb.repository.MongoRepository;

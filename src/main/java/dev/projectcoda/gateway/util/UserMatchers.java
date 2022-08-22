@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) Project Coda LLC, 2022.
+ * All rights reserved.
+ */
+
 package dev.projectcoda.gateway.util;
 
 import com.google.common.cache.CacheBuilder;
