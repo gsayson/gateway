@@ -1,5 +1,7 @@
 package dev.projectcoda.gateway.security;
 
+import java.util.Set;
+
 /**
  * Holds constant {@link String}s that represent "roles". They are as follows:
  * <ul>
@@ -36,5 +38,22 @@ public interface Permissions {
 	 * such as matchmaking and rooms.
 	 */
 	String USER = "dev.projectcoda.gateway.user";
+
+	/**
+	 * Obtain all the permissions of a user from the given permission,
+	 * directly and indirectly.
+	 * @param permission A permission in {@link Permissions}.
+	 * @return all the permissions that the given permission itself directly or indirectly
+	 * has.
+	 */
+	@SuppressWarnings("unused")
+	static Set<String> permissions(String permission) {
+		return switch(permission) {
+			case ADMIN -> Set.of(ADMIN, MODERATOR, USER);
+			case MODERATOR -> Set.of(MODERATOR, USER);
+			case USER -> Set.of(USER);
+			default -> throw new IllegalArgumentException("given value is not listed in Permissions");
+		};
+	}
 
 }

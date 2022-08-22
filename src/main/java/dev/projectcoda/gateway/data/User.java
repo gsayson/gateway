@@ -3,9 +3,11 @@ package dev.projectcoda.gateway.data;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,11 +21,14 @@ import java.util.UUID;
  *     <li>Badges</li>
  *     <li>A matchmaking rating</li>
  *     <li>A matchmaking rank</li>
+ *     <li>(not exposed) A BCrypt-encoded password</li>
+ *     <li>A URL pointing to an image, which will be used as the avatar.</li>
  * </ul>
  * <p>All fields in this class are not null unless specified otherwise.</p>
  * @author Gerard Sayson
  */
 @Getter
+@ToString
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Builder(toBuilder = true)
@@ -86,9 +91,21 @@ public final class User {
 	@Singular
 	private List<String> permissions;
 
+	@Email
+	@NotNull
+	private String email;
+
 	/**
 	 * The password of the user, encoded using {@link dev.projectcoda.gateway.util.SecurityUtils#encodeBCrypt(String) SecurityUtils.encodeBCrypt(String)}.
 	 */
+	@NotNull
 	private String password;
+
+	/**
+	 * The avatar of the user. This can be obtained through {@link dev.projectcoda.gateway.util.GravatarUtils#gravatar(String)}.
+	 */
+	@NotNull
+	@org.hibernate.validator.constraints.URL
+	private URL avatar;
 
 }

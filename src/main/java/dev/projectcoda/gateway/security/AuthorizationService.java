@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -53,6 +55,7 @@ public class AuthorizationService {
 		algorithm = Algorithm.ECDSA512(publicKey, privateKey);
 		verifier = JWT.require(algorithm).withIssuer("Coda Gateway")
 				.withAudience("projectcoda.dev")
+				.withClaimPresence("permissions")
 				.withClaimPresence("refreshToken")
 				.build();
 	}
@@ -74,15 +77,15 @@ public class AuthorizationService {
 	 *     <li>Its audience claim is {@code projectcoda.dev}</li>
 	 *     <li>Its expiry is {@link GatewayConfiguration#getRefreshExpiration()} days from {@link Instant#now()}.</li>
 	 *     <li>Its subject is the given user's {@link UUID}, in a string representation.</li>
-	 *     <li>The private claim {@code permissions} contains the user's permissions.</li>
-	 *     <li>The private claim {@code refreshToken} is {@code true}.</li>
+	 *     <li>The claim {@code permissions} contains the user's permissions.</li>
+	 *     <li>The claim {@code refreshToken} is {@code true}.</li>
 	 * </ul>
 	 * <p>This is only for use in {@link #issueRegularToken}, and this should be kept safeguarded.</p>
 	 * @param user The {@link User} to issue a JWT token for.
 	 * @return a JWT token that is subject to the above constraints.
 	 * @see #issueRegularToken(String)
 	 */
-	public String issueRefreshToken(User user) {
+	public String issueRefreshToken(@NotNull User user) {
 		return JWT.create().withIssuer("Coda Gateway")
 				.withAudience("projectcoda.dev")
 				.withExpiresAt(Instant.now().plus(configuration.getRefreshExpiration(), ChronoUnit.DAYS))
@@ -99,8 +102,8 @@ public class AuthorizationService {
 	 *     <li>Its audience claim is {@code projectcoda.dev}</li>
 	 *     <li>Its expiry is {@link GatewayConfiguration#getTokenExpiration()} hours from {@link Instant#now()}.</li>
 	 *     <li>Its subject is the given user's {@link UUID}, in a string representation.</li>
-	 *     <li>The private claim {@code permissions} contains the user's permissions.</li>
-	 *     <li>The private claim {@code refreshToken} is {@code false}.</li>
+	 *     <li>The claim {@code permissions} contains the user's permissions.</li>
+	 *     <li>The claim {@code refreshToken} is {@code false}.</li>
 	 * </ul>
 	 * <p>The issued token can be used in all authenticated Coda services.</p>
 	 * @param refreshToken The refresh token to issue.
@@ -109,7 +112,7 @@ public class AuthorizationService {
 	 * @see #issueRefreshToken(User)
 	 * @see JWTVerifier#verify(String)
 	 */
-	public String issueRegularToken(String refreshToken) {
+	public String issueRegularToken(@NotBlank String refreshToken) {
 		DecodedJWT jwt = verifier.verify(refreshToken);
 		return JWT.create().withIssuer("Coda Gateway")
 				.withAudience("projectcoda.dev")
@@ -118,6 +121,24 @@ public class AuthorizationService {
 				.withClaim("permissions", List.of(jwt.getClaim("permissions").asArray(String.class)))
 				.withClaim("refreshToken", false)
 				.sign(algorithm);
+	}
+
+	/**
+	 * Decodes a token, either the authorization or refresh type, and subjects it to the following verifications:
+	 * <ul>
+	 *     <li>Its issuer claim is {@code Coda Gateway}</li>
+	 *     <li>Its audience claim is {@code projectcoda.dev}</li>
+	 *     <li>The token is not expired.</li>
+	 *     <li>Its subject is the given user's {@link UUID}, in a string representation.</li>
+	 *     <li>The claim {@code permissions} is present.</li>
+	 *     <li>The claim {@code refreshToken} is present.</li>
+	 * </ul>
+	 * @param jwt The JWT token to verify.
+	 * @return a {@link DecodedJWT}.
+	 * @throws com.auth0.jwt.exceptions.JWTVerificationException if an exception occurred while verifying the given JWT token.
+	 */
+	public DecodedJWT decodeToken(@NotBlank String jwt) {
+		return verifier.verify(jwt);
 	}
 
 }
