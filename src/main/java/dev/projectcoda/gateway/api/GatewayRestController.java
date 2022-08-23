@@ -134,11 +134,12 @@ public class GatewayRestController {
 		try {
 			DecodedJWT jwt = authorizationService.decodeToken(request.token());
 			return ResponseEntity.ok(new ValidTokenResponse(
-					!jwt.getClaim("refreshToken").asBoolean(),
+					true,
+					Boolean.TRUE.equals(jwt.getClaim("refreshToken").asBoolean()) ? "refresh" : "auth",
 					jwt.getClaim("permissions").asList(String.class)
 			));
 		} catch(RuntimeException e) {
-			return ResponseEntity.ok(new ValidTokenResponse(false, null));
+			return ResponseEntity.ok(new ValidTokenResponse(false, null, null));
 		}
 	}
 
