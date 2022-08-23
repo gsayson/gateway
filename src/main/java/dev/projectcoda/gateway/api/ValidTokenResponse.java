@@ -16,5 +16,5 @@ import java.util.List;
  * @see dev.projectcoda.gateway.security.Permissions
  * @author Gerard Sayson
  */
-public record ValidTokenResponse(boolean valid, String type, @Nullable List<String> permissions) implements Response {
+public record ValidTokenResponse(boolean valid, @Nullable String type, @Nullable List<String> permissions) implements Response {
 }
