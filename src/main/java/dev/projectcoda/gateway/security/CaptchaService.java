@@ -1,0 +1,50 @@
+package dev.projectcoda.gateway.security;
+
+import dev.projectcoda.gateway.conf.GatewayConfiguration;
+import dev.projectcoda.gateway.util.RecaptchaUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+/**
+ * A service that validates Google reCAPTCHAs.
+ * @author Gerard Sayson
+ */
+@Service
+public class CaptchaService {
+
+	private static final String GOOGLE_RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
+	private final String recaptchaSecret;
+	private final RestTemplateBuilder restTemplateBuilder;
+
+	public CaptchaService(@Autowired RestTemplateBuilder restTemplateBuilder, @Autowired GatewayConfiguration configuration) {
+		this.restTemplateBuilder = restTemplateBuilder;
+		this.recaptchaSecret = configuration.getRecaptchaSecret();
+	}
+
+	@SuppressWarnings("unchecked")
+	public String verifyRecaptcha(String ip, String recaptchaResponse) {
+		Map<String, String> body = new HashMap<>();
+		body.put("secret", recaptchaSecret);
+		body.put("response", recaptchaResponse);
+		body.put("remoteip", ip);
+		@SuppressWarnings("rawtypes") ResponseEntity<Map> recaptchaResponseEntity = restTemplateBuilder.build().postForEntity(GOOGLE_RECAPTCHA_VERIFY_URL + "?secret={secret}&response={response}&remoteip={remoteip}", body, Map.class, body);
+		Map<String, Object> responseBody = recaptchaResponseEntity.getBody();
+		boolean recaptchaSuccess = (Boolean) Objects.requireNonNull(responseBody).get("success");
+		if(!recaptchaSuccess) {
+			List<String> errorCodes = (List<String>) responseBody.get("error-codes");
+			return errorCodes.stream()
+					.map(RecaptchaUtils.RECAPTCHA_ERROR_CODE::get)
+					.collect(Collectors.joining(", "));
+		} else {
+			return "";
+		}
+	}
+}

@@ -10,6 +10,7 @@ import dev.projectcoda.gateway.data.Rank;
 import dev.projectcoda.gateway.data.User;
 import dev.projectcoda.gateway.data.UserRepository;
 import dev.projectcoda.gateway.security.AuthorizationService;
+import dev.projectcoda.gateway.security.CaptchaService;
 import dev.projectcoda.gateway.security.Permissions;
 import dev.projectcoda.gateway.util.GravatarUtils;
 import dev.projectcoda.gateway.util.HttpUtils;
@@ -21,13 +22,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The REST API controller for the gateway. All requests should use anonymous access.
@@ -57,7 +56,12 @@ public class GatewayRestController {
 	 * was successfully logged in) or an error message.
 	 */
 	@PostMapping("/signup")
-	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request) {
+	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @Autowired CaptchaService captchaService, HttpServletRequest httpServletRequest, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
+		String ip = httpServletRequest.getRemoteAddr();
+		String captchaVerifyMessage = captchaService.verifyRecaptcha(ip, recaptchaResponse);
+		if (!captchaVerifyMessage.isEmpty()) {
+			return ResponseEntity.badRequest().body(new ErrorResponse(captchaVerifyMessage));
+		}
 		if(repository.exists(UserMatchers.usernameExample(request.username()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the username already exists"));
 		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the email is already in use"));
 		UUID uuid = UUID.randomUUID();
@@ -83,7 +87,7 @@ public class GatewayRestController {
 	 * successfully logged in, and a message that is either the user's UUID (if the user
 	 * was successfully logged in) or an error message.
 	 */
-	@GetMapping("/login")
+	@PostMapping("/login")
 	public ResponseEntity<Response> login(@Valid @RequestBody UserLogInRequest request) {
 		Optional<User> userOptional = repository.findOne(UserMatchers.usernameExample(request.username()));
 		if(userOptional.isPresent()) {
@@ -103,7 +107,7 @@ public class GatewayRestController {
 		}
 	}
 
-	@GetMapping("/refresh")
+	@PostMapping("/refresh")
 	public ResponseEntity<Response> refresh(@Valid @RequestBody RefreshTokenRequest request) {
 		return ResponseEntity.ok(new RefreshTokenResponse(request.refreshToken(), authorizationService.issueRegularToken(request.refreshToken())));
 	}
@@ -129,7 +133,7 @@ public class GatewayRestController {
 	 * @return a JSON object denoting some properties of the given authorization token, listed above. The {@link ResponseEntity} shim
 	 * will always have a status of {@code 200 OK}.
 	 */
-	@GetMapping("/valid")
+	@PostMapping("/valid")
 	public ResponseEntity<Response> valid(@Valid @RequestBody ValidTokenRequest request) {
 		try {
 			DecodedJWT jwt = authorizationService.decodeToken(request.token());

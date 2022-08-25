@@ -52,4 +52,9 @@ public class GatewayConfiguration {
 	@Positive
 	private int refreshExpiration = 1;
 
+	/**
+	 * The reCAPTCHA secret to use for protection against bots.
+	 */
+	private String recaptchaSecret;
+
 }

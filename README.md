@@ -42,8 +42,9 @@ such an error response:
 - `timestamp` is the Java-formatted timestamp when the error occurred.
 - `message` is the reason why the error occurred.
 
-### `POST` - `/gateway/signup`
-Registers a user into the Coda Gateway.
+### `POST` - `/gateway/signup?g-recaptcha-response=...`
+Registers a user into the Coda Gateway. This requires a query parameter `g-recaptcha-response`,
+which holds the reCAPTCHA response resulting from the CAPTCHA solved by the user.
 
 #### Request
 ```json
@@ -65,7 +66,7 @@ Registers a user into the Coda Gateway.
 ```
 - `uuid` is the UUID of the player.
 
-### `GET` - `/gateway/login`
+### `POST` - `/gateway/login`
 Provides a user with a refresh JWT token and an authorization JWT token,
 provided they log in with the correct credentials.
 
@@ -92,7 +93,7 @@ provided they log in with the correct credentials.
 - `authToken` is a generated authorization token for convenience purposes. To
 get another authorization token on expiry, see `/gateway/refresh`.
 
-### `GET` - `/gateway/valid`
+### `POST` - `/gateway/valid`
 Checks whether a token, refresh or authorization, is valid.
 If it's valid, the type will be stated.
 
