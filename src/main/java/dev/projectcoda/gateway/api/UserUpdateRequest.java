@@ -12,6 +12,8 @@ import javax.validation.constraints.NotNull;
 /**
  * A request to update the user's details. These will cover all of them.
  * @author Gerard Sayson
+ * @param bio The bio of the user.
+ * @param email The new email of the user.
  */
 public record UserUpdateRequest(@Nullable String bio, @NotNull @Email String email) {
 }

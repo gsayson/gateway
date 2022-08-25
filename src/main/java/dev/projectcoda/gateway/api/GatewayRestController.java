@@ -135,7 +135,7 @@ public class GatewayRestController {
 			DecodedJWT jwt = authorizationService.decodeToken(request.token());
 			return ResponseEntity.ok(new ValidTokenResponse(
 					true,
-					Boolean.TRUE.equals(jwt.getClaim("refreshToken").asBoolean()) ? "refresh" : "auth",
+					jwt.getClaim("refreshToken").asBoolean() ? "refresh" : "auth",
 					jwt.getClaim("permissions").asList(String.class)
 			));
 		} catch(RuntimeException e) {
@@ -201,13 +201,15 @@ public class GatewayRestController {
 		System.out.println(bearerOptional);
 		if(bearerOptional.isPresent()) {
 			try {
-				authorizationService.decodeToken(bearerOptional.get()); // we get an exception if it's a bad token.
+				DecodedJWT jwt = authorizationService.decodeToken(bearerOptional.get()); // we get an exception if it's a bad token.
+				if(jwt.getSubject().equals(id)) throw new RuntimeException();
 			} catch(RuntimeException ignored) {
 				return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
 			}
 		} else {
 			return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
 		}
+		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the email is already in use"));
 		Optional<User> optionalUser = repository.findById(UUID.fromString(id));
 		if(optionalUser.isPresent()) {
 			repository.save(
