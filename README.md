@@ -110,7 +110,10 @@ If it's valid, the type will be stated.
 {
   "valid": true,
   "type": "...",
-  "permissions": ["...", "..."]
+  "permissions": [
+    "...", 
+    "..."
+  ]
 }
 ```
 - `valid` is whether the given token is valid.
@@ -125,6 +128,51 @@ path variable `{id}`.
 No request body is required, and it accepts
 any `Content-Type`, contrary to other endpoints that strictly
 only accept `application/json`.
+
+#### Response
+
+```json
+{
+  "username": "...",
+  "uuid": "...",
+  "bio": "...",
+  "badges": [
+    "...",
+    "..."
+  ],
+  "rating": 1234,
+  "rank": "SP",
+  "permissions": [
+    "...",
+    "..."
+  ]
+}
+```
+- `username` is the username of the user.
+- `uuid` is the UUID of the user.
+- `bio` is the bio of the user, in CommonMark Markdown.
+- `badges` is an array of badge identifiers that the user may possess.
+- `rating` is a Glicko rating of the player.
+- `rank` is the rank of the user.
+The user's rank is dependent on the rating of the user. From highest to lowest:
+```java
+enum Rank {
+	SP("S+", 4500), 
+    S("S", 3500), 
+    A("A", 2000), 
+    B("B", 1600), 
+    C("C", 1200), 
+    D("D", 2000), 
+    E("E", 750), 
+    F("F", 0),
+	UNRANKED("Unranked", 0) // player needs 10 games played minimum to be ranked.
+}
+```
+where the format is `[name]('"' [user-friendly name] '"', [threshold]`
+and:
+- `name` is the name that is actually returned as the `rank` property of the response.
+- `user-friendly name` is the name that should be displayed to users.
+- `threshold` is the threshold required to reach the given rank.
 
 ### `PUT` - `/gateway/user/{id}`
 Updates information of the given user, denoted by the
