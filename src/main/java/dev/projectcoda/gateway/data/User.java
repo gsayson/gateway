@@ -63,12 +63,16 @@ public final class User {
 	/**
 	 * An array containing IDs of badges. The badge IDs are as follows:
 	 * <ul>
-	 *     <li><b>{@code general.developer}</b> - The decorated user is a developer of Project Coda.</li>
-	 *     <li><b>{@code general.friend}</b> - The decorated user is a friend of a developer of Project Coda.</li>
-	 *     <li><b>{@code general.ko}</b> - The decorated user has KO-ed a developer of Project Coda.</li>
+	 *     <li><b>{@code staff.developer}</b> - The decorated user is a developer of Project Coda.</li>
+	 *     <li><b>{@code staff.admin}</b> - The decorated user is an admin of Project Coda.</li>
+	 *     <li><b>{@code staff.moderator}</b> - The decorated user is a moderator of Project Coda.</li>
+	 *     <li><b>{@code special.friend}</b> - The decorated user is a friend of a developer of Project Coda.</li>
+	 *     <li><b>{@code special.tester}</b> - The decorated user tested Project Coda before its first general release.</li>
+	 *     <li><b>{@code general.devil}</b> - The decorated user has KO-ed a developer of Project Coda.</li>
 	 *     <li><b>{@code general.patron}</b> - The decorated user is supporting Project Coda financially.</li>
 	 *     <li><b>{@code play.top3}</b> - The decorated player is one of the top three players in Coda.</li>
-	 *     <li><b>{@code play.jack}</b> - The decorated player has won at least one match in <b>all</b> of the programming languages supported by Project Coda.</li>
+	 *     <li><b>{@code play.taskcreator}</b> - The decorated user has created a Task that was accepted into the task database.</li>
+	 *     <li><b>{@code play.codar}</b> - The decorated player has won at least one match in <b>all</b> of the programming languages supported by Project Coda.</li>
 	 * </ul>
 	 */
 	@NotNull

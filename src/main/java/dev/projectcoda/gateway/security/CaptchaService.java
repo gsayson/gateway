@@ -30,12 +30,11 @@ public class CaptchaService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public String verifyRecaptcha(String ip, String recaptchaResponse) {
+	public String verifyRecaptcha(String recaptchaResponse) {
 		Map<String, String> body = new HashMap<>();
 		body.put("secret", recaptchaSecret);
 		body.put("response", recaptchaResponse);
-		body.put("remoteip", ip);
-		@SuppressWarnings("rawtypes") ResponseEntity<Map> recaptchaResponseEntity = restTemplateBuilder.build().postForEntity(GOOGLE_RECAPTCHA_VERIFY_URL + "?secret={secret}&response={response}&remoteip={remoteip}", body, Map.class, body);
+		@SuppressWarnings("rawtypes") ResponseEntity<Map> recaptchaResponseEntity = restTemplateBuilder.build().postForEntity(GOOGLE_RECAPTCHA_VERIFY_URL + "?secret={secret}&response={response}", body, Map.class, body);
 		Map<String, Object> responseBody = recaptchaResponseEntity.getBody();
 		boolean recaptchaSuccess = (Boolean) Objects.requireNonNull(responseBody).get("success");
 		if(!recaptchaSuccess) {

@@ -22,16 +22,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * The REST API controller for the gateway. All requests should use anonymous access.
  * @author Gerard Sayson
  */
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/gateway", consumes = "application/json", produces = "application/json")
 public class GatewayRestController {
@@ -56,9 +59,8 @@ public class GatewayRestController {
 	 * was successfully logged in) or an error message.
 	 */
 	@PostMapping("/signup")
-	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @Autowired CaptchaService captchaService, HttpServletRequest httpServletRequest, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
-		String ip = httpServletRequest.getRemoteAddr();
-		String captchaVerifyMessage = captchaService.verifyRecaptcha(ip, recaptchaResponse);
+	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @Autowired CaptchaService captchaService, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
+		String captchaVerifyMessage = captchaService.verifyRecaptcha(recaptchaResponse);
 		if (!captchaVerifyMessage.isEmpty()) {
 			return ResponseEntity.badRequest().body(new ErrorResponse(captchaVerifyMessage));
 		}
