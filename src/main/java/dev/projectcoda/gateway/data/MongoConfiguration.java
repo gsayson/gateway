@@ -7,6 +7,7 @@ package dev.projectcoda.gateway.data;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import dev.projectcoda.gateway.conf.GatewayConfiguration;
@@ -44,6 +45,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 		ConnectionString connectionString = new ConnectionString(configuration.getMongoHost());
 		MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
 				.applyConnectionString(connectionString)
+				.readPreference(ReadPreference.primaryPreferred())
+				.retryWrites(true)
+				.retryReads(true)
 				.uuidRepresentation(UuidRepresentation.STANDARD)
 				.build();
 
