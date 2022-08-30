@@ -25,6 +25,20 @@ Moderators may do the following:
 Users may use multiplayer Coda services that require authentication.
 Prominent examples are official matchmaking, or rooms.
 
+## I18N
+Gateway error messages are I18N keys. Take note and implement the following:
+```java
+class I18N {
+	public static final String
+			USERNAME_IN_USE = "Gateway.UsernameUsed",
+			EMAIL_IN_USE = "Gateway.EmailUsed",
+			CAPTCHA_ERROR = "Gateway.Captcha",
+			BAD_CREDENTIALS = "Gateway.BadCredentials",
+			UNAUTHORIZED = "Gateway.Unauthorized";
+}
+```
+This set will rarely change: if it does, please make sure to update your implementation.
+
 ## Endpoints
 All endpoints require the header `Content-Type` to be `application/json`,
 unless otherwise specified.
@@ -40,7 +54,7 @@ such an error response:
 }
 ```
 - `timestamp` is the Java-formatted timestamp when the error occurred.
-- `message` is the reason why the error occurred.
+- `message` is the reason why the error occurred. See the section on I18N for possible error responses.
 
 ### `POST` - `/gateway/signup?g-recaptcha-response=...`
 Registers a user into the Coda Gateway. This requires a query parameter `g-recaptcha-response`,

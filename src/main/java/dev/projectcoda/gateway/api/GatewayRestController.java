@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import dev.projectcoda.gateway.data.Rank;
 import dev.projectcoda.gateway.data.User;
 import dev.projectcoda.gateway.data.UserRepository;
+import dev.projectcoda.gateway.i18n.ErrorResponses;
 import dev.projectcoda.gateway.security.AuthorizationService;
 import dev.projectcoda.gateway.security.CaptchaService;
 import dev.projectcoda.gateway.security.Permissions;
@@ -62,10 +63,10 @@ public class GatewayRestController {
 	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @Autowired CaptchaService captchaService, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
 		String captchaVerifyMessage = captchaService.verifyRecaptcha(recaptchaResponse);
 		if (!captchaVerifyMessage.isEmpty()) {
-			return ResponseEntity.badRequest().body(new ErrorResponse(captchaVerifyMessage));
+			return ResponseEntity.badRequest().body(new ErrorResponse(ErrorResponses.CAPTCHA_ERROR));
 		}
-		if(repository.exists(UserMatchers.usernameExample(request.username()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the username already exists"));
-		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the email is already in use"));
+		if(repository.exists(UserMatchers.usernameExample(request.username()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ErrorResponses.USERNAME_IN_USE));
+		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ErrorResponses.EMAIL_IN_USE));
 		UUID uuid = UUID.randomUUID();
 		repository.save(
 				User.builder()
@@ -102,10 +103,10 @@ public class GatewayRestController {
 						authorizationService.issueRegularToken(refreshToken)
 				));
 			} else {
-				return HttpUtils.unauthorized(new ErrorResponse("bad credentials"));
+				return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.BAD_CREDENTIALS));
 			}
 		} else {
-			return HttpUtils.unauthorized(new ErrorResponse("bad credentials"));
+			return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.BAD_CREDENTIALS));
 		}
 	}
 
@@ -165,13 +166,13 @@ public class GatewayRestController {
 				DecodedJWT jwt = authorizationService.decodeToken(bearerOptional.get());
 				if(!jwt.getClaim("permissions").asList(String.class).contains(Permissions.ADMIN)) {
 					// we don't have the appropriate permissions, so we fail.
-					return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
+					return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 				}
 			} catch(RuntimeException ignored) {
-				return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
+				return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 			}
 		} else {
-			return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
+			return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 		}
 		Optional<User> optionalUser = repository.findById(UUID.fromString(id));
 		if(optionalUser.isPresent()) {
@@ -210,12 +211,12 @@ public class GatewayRestController {
 				DecodedJWT jwt = authorizationService.decodeToken(bearerOptional.get()); // we get an exception if it's a bad token.
 				if(jwt.getSubject().equals(id)) throw new RuntimeException();
 			} catch(RuntimeException ignored) {
-				return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
+				return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 			}
 		} else {
-			return HttpUtils.unauthorized(new ErrorResponse("unauthorized"));
+			return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 		}
-		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("the email is already in use"));
+		if(repository.exists(UserMatchers.emailExample(request.email()))) return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ErrorResponses.EMAIL_IN_USE));
 		Optional<User> optionalUser = repository.findById(UUID.fromString(id));
 		if(optionalUser.isPresent()) {
 			repository.save(
