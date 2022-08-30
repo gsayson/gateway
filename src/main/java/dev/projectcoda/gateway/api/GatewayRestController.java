@@ -205,11 +205,10 @@ public class GatewayRestController {
 	@PutMapping("/user/{id}")
 	public ResponseEntity<Response> updateUserAsUser(@PathVariable String id, @Valid @RequestBody UserUpdateRequest request, @RequestHeader HttpHeaders httpHeaders) {
 		Optional<String> bearerOptional = HttpUtils.getBearerToken(httpHeaders);
-		System.out.println(bearerOptional);
 		if(bearerOptional.isPresent()) {
 			try {
 				DecodedJWT jwt = authorizationService.decodeToken(bearerOptional.get()); // we get an exception if it's a bad token.
-				if(jwt.getSubject().equals(id)) throw new RuntimeException();
+				if(!jwt.getSubject().equals(id)) throw new RuntimeException();
 			} catch(RuntimeException ignored) {
 				return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
 			}
@@ -231,6 +230,47 @@ public class GatewayRestController {
 		}
 	}
 
+	/**
+	 * Modifies a user's friend list. This requires
+	 * {@link Permissions#USER} authorization, and users can add only one friend at a time.
+	 * <p>This endpoint can and should only be executed by the client itself.</p>
+	 * <p>Calling this method when the user is trying to add himself does nothing!</p>
+	 * @param id The UUID of the user.
+	 * @param request The {@link FriendListModifyRequest}.
+	 * @return a {@code 204 No Content} response if successful, else a {@code 404 Not Found} response if the user or friend is not found.
+	 */
+	@PutMapping("/user/{id}/friends")
+	public ResponseEntity<Response> friendModify(@PathVariable String id, @RequestHeader HttpHeaders httpHeaders, @Valid @RequestBody FriendListModifyRequest request) {
+		Optional<String> bearerOptional = HttpUtils.getBearerToken(httpHeaders);
+		if(bearerOptional.isPresent()) {
+			try {
+				DecodedJWT jwt = authorizationService.decodeToken(bearerOptional.get());
+				if(!jwt.getSubject().equals(id)) throw new RuntimeException();
+			} catch(RuntimeException ignored) {
+				return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
+			}
+		} else {
+			return HttpUtils.unauthorized(new ErrorResponse(ErrorResponses.UNAUTHORIZED));
+		}
+		var uuid = UUID.fromString(id);
+		var userO = repository.findById(uuid);
+		if(userO.isPresent() && repository.existsById(request.friend())) {
+			var user = userO.get();
+			if(!user.getUuid().equals(request.friend())) {
+				if(request.add()) {
+					user.getFriends().add(request.friend());
+				} else {
+					user.getFriends().remove(request.friend());
+				}
+				repository.save(user);
+			}
+			return ResponseEntity.noContent().build();
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+
+	}
+
 	// utility methods and classes
 
 	/**
@@ -250,6 +290,7 @@ public class GatewayRestController {
 		List<String> permissionsT = user.getPermissions();
 		String emailT = user.getEmail();
 		URL avatarT = user.getAvatar();
+		Set<UUID> friendsT = user.getFriends();
 		return ResponseEntity.ok(new UserShim(
 				usernameT,
 				uuidT,
@@ -259,21 +300,24 @@ public class GatewayRestController {
 				rankT,
 				permissionsT,
 				emailT,
-				avatarT
+				avatarT,
+				friendsT
 		));
 	}
 
 	/**
 	 * A shim of {@link User} that hides the password.
 	 * <p>This is for internal use only, in {@link #mapUserSafe(User)}</p>
-	 * @param username The {@code username} parameter.
-	 * @param uuid The {@code uuid} parameter.
-	 * @param bio The {@code bio} parameter.
-	 * @param badges The {@code badges} parameter.
-	 * @param rating The {@code rating} parameter.
-	 * @param rank The {@code rank} parameter.
+	 *
+	 * @param username    The {@code username} parameter.
+	 * @param uuid        The {@code uuid} parameter.
+	 * @param bio         The {@code bio} parameter.
+	 * @param badges      The {@code badges} parameter.
+	 * @param rating      The {@code rating} parameter.
+	 * @param rank        The {@code rank} parameter.
 	 * @param permissions The {@code permissions} parameter.
+	 * @param friends     The {@code friends} parameter.
 	 */
-	private record UserShim(String username, UUID uuid, String bio, Set<String> badges, int rating, Rank rank, List<String> permissions, String email, URL avatar) implements Response {}
+	private record UserShim(String username, UUID uuid, String bio, Set<String> badges, int rating, Rank rank, List<String> permissions, String email, URL avatar, Set<UUID> friends) implements Response {}
 
 }

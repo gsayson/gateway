@@ -15,4 +15,4 @@ import java.util.UUID;
  * @author Gerard Sayson
  */
 @Repository
-public interface UserRepository extends MongoRepository<User, UUID> { }
+public interface UserRepository extends MongoRepository<User, UUID> {}

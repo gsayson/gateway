@@ -13,9 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.net.URL;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Represents a Coda user. Coda users have the following:
@@ -116,5 +114,13 @@ public final class User {
 	@NotNull
 	@org.hibernate.validator.constraints.URL
 	private URL avatar;
+
+	/**
+	 * The list of friends of a user. This is already initialized by default, so please do not modify
+	 * this field.
+	 */
+	@NotNull
+	@Builder.Default
+	private Set<UUID> friends = new HashSet<>();
 
 }
