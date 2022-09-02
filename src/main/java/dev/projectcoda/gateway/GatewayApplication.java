@@ -9,10 +9,14 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import javax.validation.constraints.NotNull;
 import java.security.Security;
 
 @SpringBootApplication
 public class GatewayApplication {
+
+	@NotNull
+	public static String VERSION = "1.0.0/production";
 
 	public static void main(String[] args) {
 		Security.setProperty("crypto.policy", "unlimited");

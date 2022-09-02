@@ -11,6 +11,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import dev.projectcoda.gateway.conf.GatewayConfiguration;
 import dev.projectcoda.gateway.data.User;
+import lombok.Getter;
 import lombok.Lombok;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,9 @@ import java.util.UUID;
 @Service
 public class AuthorizationService {
 
-	private static final ECPublicKey publicKey;
+	@Getter private static final ECPublicKey publicKey;
 	private static final ECPrivateKey privateKey;
-	private static final Algorithm algorithm;
+	@Getter private static final Algorithm algorithm;
 
 	// Verifies both regular and refresh tokens.
 	private static final JWTVerifier verifier;

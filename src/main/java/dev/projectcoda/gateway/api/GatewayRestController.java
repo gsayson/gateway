@@ -6,6 +6,7 @@
 package dev.projectcoda.gateway.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import dev.projectcoda.gateway.GatewayApplication;
 import dev.projectcoda.gateway.data.Rank;
 import dev.projectcoda.gateway.data.User;
 import dev.projectcoda.gateway.data.UserRepository;
@@ -26,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The REST API controller for the gateway. All requests should use anonymous access.
@@ -126,16 +124,20 @@ public class GatewayRestController {
 		return optionalUser.map(GatewayRestController::mapUserSafe).orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
- 	/**
+	/**
 	 * Returns a JSON object containing the following:
 	 * <ul>
 	 *     <li>Whether the provided authorization token is valid.</li>
 	 *     <li>The permissions of the provided authorization token.</li>
 	 * </ul>
 	 * For refresh tokens, the second property listed above will still be valid to use, however the first property will be {@code false}.
+	 * <p><b>USE THE "{@link #metadata() GET /gateway/metadata}" ENDPOINT INSTEAD!</b> This allows validation to be done on the clientside.</p>
+	 * <p>In future releases, this method will be removed soon.</p>
 	 * @return a JSON object denoting some properties of the given authorization token, listed above. The {@link ResponseEntity} shim
 	 * will always have a status of {@code 200 OK}.
+	 * @deprecated This will be removed in favor of the {@link #metadata()} endpoint.
 	 */
+	@Deprecated(forRemoval = true)
 	@PostMapping("/valid")
 	public ResponseEntity<Response> valid(@Valid @RequestBody ValidTokenRequest request) {
 		try {
@@ -148,6 +150,23 @@ public class GatewayRestController {
 		} catch(RuntimeException e) {
 			return ResponseEntity.ok(new ValidTokenResponse(false, null, null));
 		}
+	}
+
+	private static final GatewayMetadata metadata = new GatewayMetadata(GatewayApplication.VERSION, AuthorizationService.getAlgorithm().getName(), Base64.getEncoder().encodeToString(AuthorizationService.getPublicKey().getEncoded()));
+
+	/**
+	 * Returns information on Gateway. This consists of:
+	 * <ul>
+	 *     <li>The version of Gateway itself ({@code <semver>/<release-type>}).</li>
+	 *     <li>The algorithm used to sign and verify JWTs.</li>
+	 *     <li>The public key, encoded in Base64.</li>
+	 * </ul>
+	 * <p>This is cached statically.</p>
+	 * @return metadata on Gateway.
+	 */
+	@GetMapping(consumes = "*/*")
+	public ResponseEntity<Response> metadata() {
+		return ResponseEntity.ok(metadata);
 	}
 
 	/**
@@ -316,6 +335,8 @@ public class GatewayRestController {
 	 * @param rating      The {@code rating} parameter.
 	 * @param rank        The {@code rank} parameter.
 	 * @param permissions The {@code permissions} parameter.
+	 * @param email       The {@code email} parameter.
+	 * @param avatar      The {@code avatar} parameter.
 	 * @param friends     The {@code friends} parameter.
 	 */
 	private record UserShim(String username, UUID uuid, String bio, Set<String> badges, int rating, Rank rank, List<String> permissions, String email, URL avatar, Set<UUID> friends) implements Response {}

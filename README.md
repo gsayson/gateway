@@ -41,7 +41,8 @@ This set will rarely change: if it does, please make sure to update your impleme
 
 ## Endpoints
 All endpoints require the header `Content-Type` to be `application/json`,
-unless otherwise specified.
+unless otherwise specified. Note that the JSON below is serialized from classes in the
+`dev.projectcoda.gateway.api` package
 
 ### Error message
 Before implementing the endpoints, please ensure to handle
@@ -108,6 +109,8 @@ provided they log in with the correct credentials.
 get another authorization token on expiry, see `/gateway/refresh`.
 
 ### `POST` - `/gateway/valid`
+> **DEPRECATION NOTICE** This endpoint is subject to removal in a future release, in favor of `/gateway/`.
+
 Checks whether a token, refresh or authorization, is valid.
 If it's valid, the type will be stated.
 
@@ -134,6 +137,14 @@ If it's valid, the type will be stated.
 - `type` is the type of token. It is either `refresh` for a refresh token, or `auth` for an authorization token.
 - `permissions` is an array of permissions possessed by the user. For more details on permissions see above.
 
+### GET - `/gateway/`
+Gets Gateway metadata.
+
+#### Request
+No request body is required, and it accepts
+any `Content-Type`, contrary to other endpoints that strictly
+only accept `application/json`.
+
 ### `GET` - `/gateway/user/{id}`
 Gets information on the given user, denoted by the
 path variable `{id}`.
@@ -159,6 +170,12 @@ only accept `application/json`.
   "permissions": [
     "...",
     "..."
+  ],
+  "email": "...",
+  "avatar": "...",
+  "friends": [
+    "...", 
+    "..."
   ]
 }
 ```
@@ -168,6 +185,11 @@ only accept `application/json`.
 - `badges` is an array of badge identifiers that the user may possess.
 - `rating` is a Glicko rating of the player.
 - `rank` is the rank of the user.
+- `email` is the email of the user.
+- `avatar` is the URL avatar of the user.
+- `friends` is the user's friends. This can be mutual (both have friended each other), or one sided (e.g., a player friends a famous player, but the famous player
+doesn't friend them back).
+
 The user's rank is dependent on the rating of the user. From highest to lowest:
 ```java
 enum Rank {
@@ -218,3 +240,9 @@ A `204 No Content` response is returned.
 ### `PUT` - `/user/{id}/server`
 This endpoint should be ignored, as it is meant to be called
 solely by the server. Hence, it is not documented here.
+
+## FAQ
+
+### Why not include keys that persist throughout Gateway runs?
+This is a deliberate design of Gateway, as we can easily invalidate JWTs when
+we fix bugs or major security issues.

@@ -55,6 +55,7 @@ public class GatewayConfiguration {
 	/**
 	 * The reCAPTCHA secret to use for protection against bots.
 	 */
+	@NotBlank
 	private String recaptchaSecret;
 
 }
