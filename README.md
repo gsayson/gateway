@@ -3,6 +3,22 @@ This repository contains the implementation of the authentication server of Proj
 Note that as this server utilizes JWT authorization mechanics, it is
 important to use HTTPS in production.
 
+## Setup
+There must be an `application.properties` file with the following Gateway keys:
+```properties
+coda.mongo-host=...
+coda.mongo-name=...
+coda.token-expiration=2
+coda.refresh-expiration=15
+```
+where:
+- `coda.mongo-host` is the MongoDB connection URL
+- `coda.mongo-name` is the MongoDB database name
+- `coda.token-expiration` is the length of the lifetime of an authorization token, in hours.
+- `coda.refresh-expiration` is the length of the lifetime of a refresh token, in days.
+
+Also, please configure other Spring properties vital to run Gateway, like setting up HTTPS etc.
+
 ## Permissions
 The permissions that a user can possess are the following (from highest to lowest):
 - `dev.projectcoda.gateway.admin` (Admin permissions)
