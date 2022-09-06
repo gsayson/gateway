@@ -18,6 +18,8 @@ where:
 - `coda.refresh-expiration` is the length of the lifetime of a refresh token, in days.
 
 Also, please configure other Spring properties vital to run Gateway, like setting up HTTPS etc.
+<br>
+By convention, Gateway should be set explicitly to listen on port 20560.
 
 ## Permissions
 The permissions that a user can possess are the following (from highest to lowest):
