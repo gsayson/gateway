@@ -205,6 +205,8 @@ public class GatewayRestController {
 							.badges(request.badges)
 							.email(request.email)
 							.avatar(request.avatar)
+							.won(request.won)
+							.totalPlayed(request.totalPlayed)
 							.build()
 			);
 			return ResponseEntity.noContent().build();
@@ -298,29 +300,20 @@ public class GatewayRestController {
 	 * @return a {@link ResponseEntity} that exposes everything of the user but the password.
 	 */
 	@SuppressWarnings("unused") // suppress the anonymous class and not this method
-	private static ResponseEntity<Response> mapUserSafe(@NotNull User user) {
-		// do all the assignments here, so we don't encounter any funny problems
-		String usernameT = user.getUsername();
-		UUID uuidT = user.getUuid();
-		String bioT = user.getBio();
-		Set<String> badgesT = user.getBadges();
-		int ratingT = user.getRating();
-		Rank rankT = user.getRank();
-		List<String> permissionsT = user.getPermissions();
-		String emailT = user.getEmail();
-		URL avatarT = user.getAvatar();
-		Set<UUID> friendsT = user.getFriends();
+	private static ResponseEntity<Response> mapUserSafe(@NotNull @Valid User user) {
 		return ResponseEntity.ok(new UserShim(
-				usernameT,
-				uuidT,
-				bioT,
-				badgesT,
-				ratingT,
-				rankT,
-				permissionsT,
-				emailT,
-				avatarT,
-				friendsT
+				user.getUsername(),
+				user.getUuid(),
+				user.getBio(),
+				user.getBadges(),
+				user.getRating(),
+				user.getRank(),
+				user.getPermissions(),
+				user.getEmail(),
+				user.getAvatar(),
+				user.getFriends(),
+				user.getWon(),
+				user.getTotalPlayed()
 		));
 	}
 
@@ -338,7 +331,22 @@ public class GatewayRestController {
 	 * @param email       The {@code email} parameter.
 	 * @param avatar      The {@code avatar} parameter.
 	 * @param friends     The {@code friends} parameter.
+	 * @param won         The {@code won} parameter.
+	 * @param totalPlayed The {@code totalPlayed} parameter.
 	 */
-	private record UserShim(String username, UUID uuid, String bio, Set<String> badges, int rating, Rank rank, List<String> permissions, String email, URL avatar, Set<UUID> friends) implements Response {}
+	private record UserShim(
+			String username,
+			UUID uuid,
+			String bio,
+			Set<String> badges,
+			int rating,
+			Rank rank,
+			List<String> permissions,
+			String email,
+			URL avatar,
+			Set<UUID> friends,
+			long won,
+			long totalPlayed
+	) implements Response {}
 
 }

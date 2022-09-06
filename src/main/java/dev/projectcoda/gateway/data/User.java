@@ -123,4 +123,16 @@ public final class User {
 	@Builder.Default
 	private Set<UUID> friends = new HashSet<>();
 
+	/**
+	 * The number of <em>online</em> games a player has won.
+	 */
+	@Builder.Default
+	private long won = 0L;
+
+	/**
+	 * The number of <em>online</em> games a player has played.
+	 */
+	@Builder.Default
+	private long totalPlayed = 0L;
+
 }
