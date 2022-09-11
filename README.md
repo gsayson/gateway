@@ -16,6 +16,7 @@ where:
 - `coda.mongo-name` is the MongoDB database name
 - `coda.token-expiration` is the length of the lifetime of an authorization token, in hours.
 - `coda.refresh-expiration` is the length of the lifetime of a refresh token, in days.
+- `coda.recaptcha-secret` is the ReCAPTCHA secret used to deter bots.
 
 Also, please configure other Spring properties vital to run Gateway, like setting up HTTPS etc.
 <br>
@@ -52,7 +53,8 @@ class I18N {
 			EMAIL_IN_USE = "Gateway.EmailUsed",
 			CAPTCHA_ERROR = "Gateway.Captcha",
 			BAD_CREDENTIALS = "Gateway.BadCredentials",
-			UNAUTHORIZED = "Gateway.Unauthorized";
+			UNAUTHORIZED = "Gateway.Unauthorized",
+			PARAMETER_ERROR = "Gateway.Parameters";
 }
 ```
 This set will rarely change: if it does, please make sure to update your implementation.
@@ -192,9 +194,11 @@ only accept `application/json`.
   "email": "...",
   "avatar": "...",
   "friends": [
-    "...", 
+    "...",
     "..."
-  ]
+  ],
+  "won": 1234,
+  "totalPlayed": 1234
 }
 ```
 - `username` is the username of the user.
@@ -207,6 +211,8 @@ only accept `application/json`.
 - `avatar` is the URL avatar of the user.
 - `friends` is the user's friends. This can be mutual (both have friended each other), or one sided (e.g., a player friends a famous player, but the famous player
 doesn't friend them back).
+- `won` is the number of games won by the user.
+- `totalPlayed` is the number of total games played by the user.
 
 The user's rank is dependent on the rating of the user. From highest to lowest:
 ```java

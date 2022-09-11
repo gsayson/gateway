@@ -7,21 +7,24 @@ package dev.projectcoda.gateway.api;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import dev.projectcoda.gateway.GatewayApplication;
+import dev.projectcoda.gateway.conf.GatewayConfiguration;
 import dev.projectcoda.gateway.data.Rank;
 import dev.projectcoda.gateway.data.User;
 import dev.projectcoda.gateway.data.UserRepository;
 import dev.projectcoda.gateway.i18n.ErrorResponses;
 import dev.projectcoda.gateway.security.AuthorizationService;
-import dev.projectcoda.gateway.security.CaptchaService;
+import dev.projectcoda.gateway.security.CaptchaChecker;
 import dev.projectcoda.gateway.security.Permissions;
 import dev.projectcoda.gateway.util.GravatarUtils;
 import dev.projectcoda.gateway.util.HttpUtils;
 import dev.projectcoda.gateway.util.SecurityUtils;
 import dev.projectcoda.gateway.util.UserMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -37,18 +40,25 @@ import java.util.*;
 @RestController
 @RequestMapping(value = "/gateway", consumes = "application/json", produces = "application/json")
 public class GatewayRestController {
-
 	private final UserRepository repository;
 	private final AuthorizationService authorizationService;
+	private final CaptchaChecker captchaChecker;
+	private final GatewayMetadata metadata;
 
 	/**
 	 * The component constructor for {@link GatewayRestController}.
 	 * @param repository The {@link UserRepository} that contains the users.
 	 * @param authorizationService The {@link AuthorizationService} to use.
 	 */
-	public GatewayRestController(@Autowired UserRepository repository, @Autowired AuthorizationService authorizationService) {
+	public GatewayRestController(@Autowired UserRepository repository, @Autowired RestTemplateBuilder builder, @Autowired @NonNull GatewayConfiguration configuration, @Autowired AuthorizationService authorizationService) {
 		this.repository = repository;
 		this.authorizationService = authorizationService;
+		this.captchaChecker = new CaptchaChecker(builder, configuration);
+		this.metadata = new GatewayMetadata(
+				GatewayApplication.VERSION,
+				AuthorizationService.getAlgorithm().getName(),
+				Base64.getEncoder().encodeToString(AuthorizationService.getPublicKey().getEncoded())
+		);
 	}
 
 	/**
@@ -58,8 +68,11 @@ public class GatewayRestController {
 	 * was successfully logged in) or an error message.
 	 */
 	@PostMapping("/signup")
-	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @Autowired CaptchaService captchaService, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
-		String captchaVerifyMessage = captchaService.verifyRecaptcha(recaptchaResponse);
+	public ResponseEntity<Response> signup(@Valid @RequestBody UserSignUpRequest request, @RequestParam(name = "g-recaptcha-response") String recaptchaResponse) {
+		if(recaptchaResponse == null) {
+			ResponseEntity.badRequest().body(new ErrorResponse(ErrorResponses.PARAMETER_ERROR));
+		}
+		String captchaVerifyMessage = captchaChecker.verifyRecaptcha(recaptchaResponse);
 		if (!captchaVerifyMessage.isEmpty()) {
 			return ResponseEntity.badRequest().body(new ErrorResponse(ErrorResponses.CAPTCHA_ERROR));
 		}
@@ -142,17 +155,11 @@ public class GatewayRestController {
 	public ResponseEntity<Response> valid(@Valid @RequestBody ValidTokenRequest request) {
 		try {
 			DecodedJWT jwt = authorizationService.decodeToken(request.token());
-			return ResponseEntity.ok(new ValidTokenResponse(
-					true,
-					jwt.getClaim("refreshToken").asBoolean() ? "refresh" : "auth",
-					jwt.getClaim("permissions").asList(String.class)
-			));
+			return ResponseEntity.ok(new ValidTokenResponse(true, jwt.getClaim("refreshToken").asBoolean() ? "refresh" : "auth", jwt.getClaim("permissions").asList(String.class)));
 		} catch(RuntimeException e) {
 			return ResponseEntity.ok(new ValidTokenResponse(false, null, null));
 		}
 	}
-
-	private static final GatewayMetadata metadata = new GatewayMetadata(GatewayApplication.VERSION, AuthorizationService.getAlgorithm().getName(), Base64.getEncoder().encodeToString(AuthorizationService.getPublicKey().getEncoded()));
 
 	/**
 	 * Returns information on Gateway. This consists of:

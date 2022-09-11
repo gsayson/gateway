@@ -20,6 +20,7 @@ public abstract class ErrorResponses {
 			EMAIL_IN_USE = "Gateway.EmailUsed",
 			CAPTCHA_ERROR = "Gateway.Captcha",
 			BAD_CREDENTIALS = "Gateway.BadCredentials",
-			UNAUTHORIZED = "Gateway.Unauthorized";
+			UNAUTHORIZED = "Gateway.Unauthorized",
+			PARAMETER_ERROR = "Gateway.Parameters";
 
 }

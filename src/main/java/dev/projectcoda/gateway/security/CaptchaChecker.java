@@ -2,10 +2,8 @@ package dev.projectcoda.gateway.security;
 
 import dev.projectcoda.gateway.conf.GatewayConfiguration;
 import dev.projectcoda.gateway.util.RecaptchaUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,14 +15,13 @@ import java.util.stream.Collectors;
  * A service that validates Google reCAPTCHAs.
  * @author Gerard Sayson
  */
-@Service
-public class CaptchaService {
+public class CaptchaChecker {
 
 	private static final String GOOGLE_RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 	private final String recaptchaSecret;
 	private final RestTemplateBuilder restTemplateBuilder;
 
-	public CaptchaService(@Autowired RestTemplateBuilder restTemplateBuilder, @Autowired GatewayConfiguration configuration) {
+	public CaptchaChecker(RestTemplateBuilder restTemplateBuilder, GatewayConfiguration configuration) {
 		this.restTemplateBuilder = restTemplateBuilder;
 		this.recaptchaSecret = configuration.getRecaptchaSecret();
 	}
