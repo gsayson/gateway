@@ -19,7 +19,7 @@ import java.security.Security;
 public class GatewayApplication implements CommandLineRunner {
 
 	@NotNull
-	public static String VERSION = "1.0.0/production";
+	public static String VERSION = "1.1.1/production";
 
 	public static void main(String[] args) {
 		Security.setProperty("crypto.policy", "unlimited");
