@@ -148,9 +148,7 @@ public class GatewayRestController {
 	 * <p>In future releases, this method will be removed soon.</p>
 	 * @return a JSON object denoting some properties of the given authorization token, listed above. The {@link ResponseEntity} shim
 	 * will always have a status of {@code 200 OK}.
-	 * @deprecated This will be removed in favor of the {@link #metadata()} endpoint.
 	 */
-	@Deprecated(forRemoval = true)
 	@PostMapping("/valid")
 	public ResponseEntity<Response> valid(@Valid @RequestBody ValidTokenRequest request) {
 		try {

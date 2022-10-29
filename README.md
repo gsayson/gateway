@@ -130,8 +130,6 @@ provided they log in with the correct credentials.
 get another authorization token on expiry, see `/gateway/refresh`.
 
 ### `POST` - `/gateway/valid`
-> **DEPRECATION NOTICE** This endpoint is subject to removal in a future release, in favor of `/gateway/`.
-
 Checks whether a token, refresh or authorization, is valid.
 If it's valid, the type will be stated.
 
